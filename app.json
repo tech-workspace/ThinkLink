@@ -1,24 +1,24 @@
 {
   "expo": {
-    "name": "ThinkLinkExpo",
-    "slug": "ThinkLinkExpo",
+    "name": "ThinkLink",
+    "slug": "ThinkLink",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/ThinkLink.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/ThinkLink.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#87CEEB"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/ThinkLink.png",
+        "backgroundColor": "#87CEEB"
       },
       "edgeToEdgeEnabled": true
     },
