@@ -20,7 +20,8 @@
         "foregroundImage": "./assets/ThinkLink.png",
         "backgroundColor": "#87CEEB"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.tech.workspace.ws.ThinkLink"
     },
     "web": {
       "favicon": "./assets/favicon.png"
