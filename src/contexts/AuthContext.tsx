@@ -1,14 +1,19 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import authService, { User } from '../services/authService';
+import { getUserRole, getUserPermissions, Permissions, Role } from '../utils/permissions';
 
 interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     isAuthenticated: boolean;
+    userRole: Role;
+    permissions: Permissions;
     login: (mobile: string, password: string) => Promise<void>;
     signup: (fullName: string, mobile: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     updateProfile: (profileData: Partial<Pick<User, 'fullName' | 'mobile'>>) => Promise<void>;
+    refreshUserProfile: () => Promise<void>;
+    refreshUserRole: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,6 +27,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [isLoading, setIsLoading] = useState(true);
 
     const isAuthenticated = !!user;
+    const userRole = getUserRole(user);
+    const permissions = getUserPermissions(user);
 
     // Check if user is already logged in on app start
     useEffect(() => {
@@ -88,14 +95,50 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
     };
 
+    const refreshUserProfile = async () => {
+        try {
+            const response = await authService.getProfile();
+            if (response.success) {
+                setUser(response.data);
+            }
+        } catch (error) {
+            console.error('Refresh profile error:', error);
+            // If profile fetch fails, try to get stored user data
+            try {
+                const userData = await authService.getStoredUser();
+                if (userData) {
+                    setUser(userData);
+                }
+            } catch (storedUserError) {
+                console.error('Failed to get stored user data:', storedUserError);
+            }
+        }
+    };
+
+    const refreshUserRole = async () => {
+        try {
+            const userWithRole = await authService.refreshUserRole();
+            if (userWithRole) {
+                setUser(userWithRole);
+            }
+        } catch (error) {
+            console.error('Refresh user role error:', error);
+        }
+    };
+
+
     const value: AuthContextType = {
         user,
         isLoading,
         isAuthenticated,
+        userRole,
+        permissions,
         login,
         signup,
         logout,
         updateProfile,
+        refreshUserProfile,
+        refreshUserRole,
     };
 
     return (

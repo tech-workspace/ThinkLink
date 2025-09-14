@@ -9,12 +9,32 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { colors } from '../theme/colors';
+import { useAuth } from '../contexts/AuthContext';
+import { canAccessAdminPanel, canManageQuestions, canCreateQuestions, canManageCategories, canManageUsers, canManageRoles } from '../utils/permissions';
+import { useEffect } from 'react';
 
 interface AdminPanelScreenProps {
     navigation?: any;
 }
 
 export default function AdminPanelScreen({ navigation }: AdminPanelScreenProps) {
+    const { user } = useAuth();
+
+    // Check if user has access to admin panel
+    if (!canAccessAdminPanel(user)) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <StatusBar style="dark" />
+                <View style={styles.accessDeniedContainer}>
+                    <Text style={styles.accessDeniedTitle}>Access Denied</Text>
+                    <Text style={styles.accessDeniedMessage}>
+                        You don't have permission to access the admin panel.
+                    </Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar style="dark" />
@@ -25,25 +45,55 @@ export default function AdminPanelScreen({ navigation }: AdminPanelScreenProps) 
                 </View>
 
                 <View style={styles.content}>
-                    <View style={styles.card}>
-                        <Text style={styles.cardTitle}>📝 Questions Management</Text>
-                        <TouchableOpacity
-                            style={[styles.button, styles.primaryButton, styles.fullWidthButton]}
-                            onPress={() => navigation?.navigate('QuestionsManagement')}
-                        >
-                            <Text style={styles.buttonText}>Manage Questions</Text>
-                        </TouchableOpacity>
-                    </View>
+                    {(canManageQuestions(user) || canCreateQuestions(user)) && (
+                        <View style={styles.card}>
+                            <Text style={styles.cardTitle}>📝 Questions Management</Text>
+                            <TouchableOpacity
+                                style={[styles.button, styles.primaryButton, styles.fullWidthButton]}
+                                onPress={() => navigation?.navigate('QuestionsManagement')}
+                            >
+                                <Text style={styles.buttonText}>
+                                    {canManageQuestions(user) ? 'Manage Questions' : 'Add Questions'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
 
-                    <View style={styles.card}>
-                        <Text style={styles.cardTitle}>🏷️ Categories Management</Text>
-                        <TouchableOpacity
-                            style={[styles.button, styles.primaryButton, styles.fullWidthButton]}
-                            onPress={() => navigation?.navigate('CategoriesManagement')}
-                        >
-                            <Text style={styles.buttonText}>Manage Categories</Text>
-                        </TouchableOpacity>
-                    </View>
+                    {canManageCategories(user) && (
+                        <View style={styles.card}>
+                            <Text style={styles.cardTitle}>🏷️ Categories Management</Text>
+                            <TouchableOpacity
+                                style={[styles.button, styles.primaryButton, styles.fullWidthButton]}
+                                onPress={() => navigation?.navigate('CategoriesManagement')}
+                            >
+                                <Text style={styles.buttonText}>Manage Categories</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
+                    {canManageUsers(user) && (
+                        <View style={styles.card}>
+                            <Text style={styles.cardTitle}>👥 Users Management</Text>
+                            <TouchableOpacity
+                                style={[styles.button, styles.primaryButton, styles.fullWidthButton]}
+                                onPress={() => navigation?.navigate('UsersManagement')}
+                            >
+                                <Text style={styles.buttonText}>Manage Users</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
+                    {canManageRoles(user) && (
+                        <View style={styles.card}>
+                            <Text style={styles.cardTitle}>🔐 Roles Management</Text>
+                            <TouchableOpacity
+                                style={[styles.button, styles.primaryButton, styles.fullWidthButton]}
+                                onPress={() => navigation?.navigate('RolesManagement')}
+                            >
+                                <Text style={styles.buttonText}>Manage Roles</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -133,5 +183,23 @@ const styles = StyleSheet.create({
         color: colors.orange,
         fontSize: 16,
         fontWeight: '600',
+    },
+    accessDeniedContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    accessDeniedTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: colors.red,
+        marginBottom: 16,
+    },
+    accessDeniedMessage: {
+        fontSize: 16,
+        color: colors.grayDark,
+        textAlign: 'center',
+        lineHeight: 24,
     },
 });

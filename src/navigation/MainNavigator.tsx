@@ -7,6 +7,8 @@ import AdminPanelScreen from '../screens/AdminPanelScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import QuestionsManagementScreen from '../screens/QuestionsManagementScreen';
 import CategoriesManagementScreen from '../screens/CategoriesManagementScreen';
+import UsersManagementScreen from '../screens/UsersManagementScreen';
+import RolesManagementScreen from '../screens/RolesManagementScreen';
 import GameScreen from '../screens/GameScreen';
 import { colors } from '../theme/colors';
 
@@ -23,6 +25,8 @@ function AdminStack() {
             <Stack.Screen name="AdminPanel" component={AdminPanelScreen} />
             <Stack.Screen name="QuestionsManagement" component={QuestionsManagementScreen} />
             <Stack.Screen name="CategoriesManagement" component={CategoriesManagementScreen} />
+            <Stack.Screen name="UsersManagement" component={UsersManagementScreen} />
+            <Stack.Screen name="RolesManagement" component={RolesManagementScreen} />
         </Stack.Navigator>
     );
 }

@@ -14,9 +14,10 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '../contexts/AuthContext';
 import { colors } from '../theme/colors';
+import { getUserRole, getUserPermissions } from '../utils/permissions';
 
 export default function ProfileScreen() {
-    const { user, logout, updateProfile } = useAuth();
+    const { user, logout, updateProfile, refreshUserRole } = useAuth();
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [editForm, setEditForm] = useState({
         fullName: user?.fullName || '',
@@ -114,12 +115,21 @@ export default function ProfileScreen() {
                                 {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                             </Text>
                         </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Role:</Text>
+                            <Text style={[styles.infoValue, styles.roleValue]}>
+                                {getUserRole(user)} {user?.roleId?.roleConst ? `(${user.roleId.roleConst})` : '(No role assigned)'}
+                            </Text>
+                        </View>
                     </View>
 
                     <View style={styles.card}>
                         <Text style={styles.cardTitle}>Actions</Text>
                         <TouchableOpacity style={styles.actionButton} onPress={handleEditProfile}>
                             <Text style={styles.actionButtonText}>✏️ Edit Profile</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.actionButton} onPress={refreshUserRole}>
+                            <Text style={styles.actionButtonText}>🔄 Refresh Role</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.actionButton}>
                             <Text style={styles.actionButtonText}>🔒 Change Password</Text>
@@ -354,5 +364,9 @@ const styles = StyleSheet.create({
         padding: 16,
         fontSize: 16,
         backgroundColor: 'white',
+    },
+    roleValue: {
+        fontWeight: 'bold',
+        color: colors.orange,
     },
 });

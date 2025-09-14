@@ -12,8 +12,11 @@ import {
     FlatList,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useNavigation } from '@react-navigation/native';
 import { colors } from '../theme/colors';
 import { getCategories, createCategory, updateCategory, deleteCategory, Category } from '../services/categoryService';
+import { useAuth } from '../contexts/AuthContext';
+import { canManageCategories } from '../utils/permissions';
 
 // Category interface is now imported from categoryService
 
@@ -46,6 +49,8 @@ const EXPO_ICONS = [
 ];
 
 export default function CategoriesManagementScreen() {
+    const { user } = useAuth();
+    const navigation = useNavigation();
     const [categories, setCategories] = useState<Category[]>([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -56,6 +61,21 @@ export default function CategoriesManagementScreen() {
         isActive: true,
     });
     const [loading, setLoading] = useState(false);
+
+    // Check if user has permission to manage categories
+    if (!canManageCategories(user)) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <StatusBar style="dark" />
+                <View style={styles.accessDeniedContainer}>
+                    <Text style={styles.accessDeniedTitle}>Access Denied</Text>
+                    <Text style={styles.accessDeniedMessage}>
+                        You don't have permission to manage categories.
+                    </Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     // Load categories from API
     useEffect(() => {
@@ -227,6 +247,14 @@ export default function CategoriesManagementScreen() {
 
             {/* Header */}
             <View style={styles.header}>
+                <View style={styles.headerLeft}>
+                    <TouchableOpacity
+                        style={styles.backButton}
+                        onPress={() => navigation.goBack()}
+                    >
+                        <Text style={styles.backButtonText}>← Back</Text>
+                    </TouchableOpacity>
+                </View>
                 <Text style={styles.headerTitle}>Categories</Text>
                 <TouchableOpacity
                     style={styles.addButton}
@@ -345,21 +373,56 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        minHeight: 80,
+    },
+    headerLeft: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    backButton: {
+        backgroundColor: colors.white,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        shadowColor: colors.white,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    backButtonText: {
+        color: colors.babyBlue,
+        fontWeight: '600',
+        fontSize: 10,
+        marginLeft: 4,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         color: colors.white,
+        flex: 2,
+        textAlign: 'center',
     },
     addButton: {
         backgroundColor: colors.orange,
         paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 8,
+        paddingVertical: 10,
+        borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        shadowColor: colors.orange,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
     },
     addButtonText: {
         color: colors.white,
         fontWeight: '600',
+        fontSize: 10,
     },
     list: {
         flex: 1,
@@ -564,5 +627,23 @@ const styles = StyleSheet.create({
     },
     iconChipText: {
         fontSize: 24,
+    },
+    accessDeniedContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    accessDeniedTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: colors.red,
+        marginBottom: 16,
+    },
+    accessDeniedMessage: {
+        fontSize: 16,
+        color: colors.grayDark,
+        textAlign: 'center',
+        lineHeight: 24,
     },
 });

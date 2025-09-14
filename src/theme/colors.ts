@@ -4,7 +4,7 @@ export const colors = {
   babyBlue: '#87CEEB',      // Baby blue
   white: '#FFFFFF',         // Pure white
   orange: '#FF8C00',        // Orange
-  
+
   // Shades and variations
   babyBlueLight: '#B8E0F0', // Lighter baby blue
   babyBlueDark: '#5BA3C7',  // Darker baby blue
@@ -13,18 +13,20 @@ export const colors = {
 
   green: '#008000',
   red: '#FF0000',
-  
+
   // Neutral colors
   gray: '#6C757D',          // Gray for text
   grayLight: '#F8F9FA',     // Light gray for backgrounds
   grayDark: '#495057',      // Dark gray for headings
-  
+  grayMedium: '#ADB5BD',    // Medium gray for secondary text
+  border: '#E9ECEF',        // Light border color
+
   // Status colors
   success: '#28A745',       // Green for success
   error: '#DC3545',         // Red for errors
   warning: '#FFC107',       // Yellow for warnings
   info: '#17A2B8',          // Blue for info
-  
+
   // Background colors
   background: '#F8F9FA',    // Main background
   cardBackground: '#FFFFFF', // Card backgrounds

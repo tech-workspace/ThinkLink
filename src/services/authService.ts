@@ -6,6 +6,10 @@ export interface User {
     _id: string;
     fullName: string;
     mobile: string;
+    roleId?: {
+        _id: string;
+        roleConst: string;
+    };
     createdAt: string;
     updatedAt: string;
 }
@@ -47,7 +51,7 @@ class AuthService {
             const response = await api.post<AuthResponse>('/v1/auth/login', credentials);
 
             if (response.data.success) {
-                // Store token and user data
+                // Store user data with role information from login response
                 await this.storeAuthData(response.data.data.token, response.data.data.user);
             }
 
@@ -88,6 +92,8 @@ class AuthService {
                     Authorization: `Bearer ${token}`,
                 },
             });
+
+
 
             return response.data;
         } catch (error: any) {
@@ -161,6 +167,45 @@ class AuthService {
             console.error('Get user data error:', error);
             return null;
         }
+    }
+
+    // Refresh user role information
+    async refreshUserRole(): Promise<User | null> {
+        try {
+            const currentUser = await this.getStoredUser();
+            if (!currentUser) {
+                return null;
+            }
+
+            const userWithRole = await this.fetchUserWithRole(currentUser);
+            if (userWithRole.roleId && typeof userWithRole.roleId === 'object' && userWithRole.roleId.roleConst) {
+                // Update stored user data with role information
+                await AsyncStorage.setItem(USER_KEY, JSON.stringify(userWithRole));
+            } else {
+            }
+
+            return userWithRole;
+        } catch (error) {
+            console.error('Refresh user role error:', error);
+            return null;
+        }
+    }
+
+    // Fetch user with role information (used for app startup)
+    private async fetchUserWithRole(user: User): Promise<User> {
+
+        try {
+            // Try to get profile (which includes role information)
+            const profileResponse = await this.getProfile();
+            if (profileResponse.success && profileResponse.data.roleId) {
+                return profileResponse.data;
+            } else {
+            }
+        } catch (profileError) {
+        }
+
+        // Return user without role information if profile fetch fails
+        return user;
     }
 
     // Store authentication data

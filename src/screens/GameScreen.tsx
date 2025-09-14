@@ -57,6 +57,8 @@ export default function GameScreen() {
     const [showPageSizeDropdown, setShowPageSizeDropdown] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [showAnswerModal, setShowAnswerModal] = useState(false);
+    const [selectedAnswer, setSelectedAnswer] = useState('');
 
     // Load categories and levels from API
     const loadData = async () => {
@@ -80,11 +82,9 @@ export default function GameScreen() {
                 if (response.success && response.data.categories) {
                     setCategoryDetails(response.data.categories);
                 } else {
-                    console.warn('Categories API returned unsuccessful response');
                     setCategoryDetails([]);
                 }
             } catch (categoryError) {
-                console.warn('Error loading category details, continuing without colors/icons:', categoryError);
                 setCategoryDetails([]);
             }
         } catch (error) {
@@ -232,6 +232,11 @@ export default function GameScreen() {
             level: 'All',
             pageSize: '1',
         });
+    };
+
+    const handleRevealAnswer = (answer: string) => {
+        setSelectedAnswer(answer);
+        setShowAnswerModal(true);
     };
 
     const getLevelLabel = (level: string) => {
@@ -460,10 +465,12 @@ export default function GameScreen() {
                                         </View>
                                     </View>
 
-                                    <View style={styles.answerContainer}>
-                                        <Text style={styles.answerLabel}>Answer:</Text>
-                                        <Text style={styles.answerText}>{question.answer}</Text>
-                                    </View>
+                                    <TouchableOpacity
+                                        style={styles.revealButton}
+                                        onPress={() => handleRevealAnswer(question.answer)}
+                                    >
+                                        <Text style={styles.revealButtonText}>🔍 Reveal Answer</Text>
+                                    </TouchableOpacity>
                                 </View>
                             );
                         })}
@@ -525,6 +532,35 @@ export default function GameScreen() {
                     </View>
                 )}
             </ScrollView>
+
+            {/* Answer Modal */}
+            <Modal
+                visible={showAnswerModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowAnswerModal(false)}
+            >
+                <TouchableWithoutFeedback onPress={() => setShowAnswerModal(false)}>
+                    <View style={styles.modalOverlay}>
+                        <TouchableWithoutFeedback>
+                            <View style={styles.answerModalContainer}>
+                                <View style={styles.answerModalHeader}>
+                                    <Text style={styles.answerModalTitle}>Answer</Text>
+                                    <TouchableOpacity
+                                        style={styles.closeButton}
+                                        onPress={() => setShowAnswerModal(false)}
+                                    >
+                                        <Text style={styles.closeButtonText}>✕</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <ScrollView style={styles.answerModalContent}>
+                                    <Text style={styles.answerModalText}>{selectedAnswer}</Text>
+                                </ScrollView>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -941,22 +977,6 @@ const styles = StyleSheet.create({
         paddingVertical: 2,
         borderRadius: 4,
     },
-    answerContainer: {
-        backgroundColor: colors.grayLight,
-        borderRadius: 12,
-        padding: 16,
-    },
-    answerLabel: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: colors.grayDark,
-        marginBottom: 8,
-    },
-    answerText: {
-        fontSize: 16,
-        color: colors.gray,
-        lineHeight: 24,
-    },
     navigationContainer: {
         flexDirection: 'row',
         padding: 20,
@@ -1076,5 +1096,83 @@ const styles = StyleSheet.create({
     navButtonTextDisabled: {
         color: colors.gray,
         opacity: 0.6,
+    },
+    // Reveal Answer Button
+    revealButton: {
+        backgroundColor: colors.green,
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginTop: 12,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 3,
+    },
+    revealButtonText: {
+        color: colors.white,
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    // Answer Modal
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    answerModalContainer: {
+        backgroundColor: colors.white,
+        borderRadius: 12,
+        width: '100%',
+        maxHeight: '80%',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    answerModalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
+    },
+    answerModalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: colors.grayDark,
+    },
+    closeButton: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        backgroundColor: colors.grayLight,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    closeButtonText: {
+        fontSize: 18,
+        color: colors.grayDark,
+        fontWeight: 'bold',
+    },
+    answerModalContent: {
+        padding: 20,
+    },
+    answerModalText: {
+        fontSize: 16,
+        lineHeight: 24,
+        color: colors.grayDark,
     },
 });

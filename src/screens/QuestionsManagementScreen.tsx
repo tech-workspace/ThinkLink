@@ -12,9 +12,12 @@ import {
     FlatList,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useNavigation } from '@react-navigation/native';
 import { colors } from '../theme/colors';
 import { getQuestions, getQuestionCategories, createQuestion, updateQuestion, deleteQuestion, Question } from '../services/questionService';
 import { getCategories, Category } from '../services/categoryService';
+import { useAuth } from '../contexts/AuthContext';
+import { canManageQuestions, canCreateQuestions, canEditQuestions, canDeleteQuestions } from '../utils/permissions';
 
 // Question interface is now imported from questionService
 
@@ -32,6 +35,8 @@ const LEVELS = [
 ];
 
 export default function QuestionsManagementScreen() {
+    const { user } = useAuth();
+    const navigation = useNavigation();
     const [questions, setQuestions] = useState<Question[]>([]);
     const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -47,6 +52,21 @@ export default function QuestionsManagementScreen() {
     const [categoryDetails, setCategoryDetails] = useState<Category[]>([]);
     const [searchTitle, setSearchTitle] = useState('');
     const [searchCategory, setSearchCategory] = useState('');
+
+    // Check if user has permission to manage or create questions
+    if (!canManageQuestions(user) && !canCreateQuestions(user)) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <StatusBar style="dark" />
+                <View style={styles.accessDeniedContainer}>
+                    <Text style={styles.accessDeniedTitle}>Access Denied</Text>
+                    <Text style={styles.accessDeniedMessage}>
+                        You don't have permission to manage questions.
+                    </Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     // Load questions and categories from API
     useEffect(() => {
@@ -104,11 +124,9 @@ export default function QuestionsManagementScreen() {
                 if (response.success && response.data.categories) {
                     setCategoryDetails(response.data.categories);
                 } else {
-                    console.warn('Categories API returned unsuccessful response');
                     setCategoryDetails([]);
                 }
             } catch (categoryError) {
-                console.warn('Error loading category details, continuing without colors/icons:', categoryError);
                 setCategoryDetails([]);
             }
         } catch (error) {
@@ -251,18 +269,22 @@ export default function QuestionsManagementScreen() {
                         {item.title}
                     </Text>
                     <View style={styles.questionActions}>
-                        <TouchableOpacity
-                            style={[styles.actionButton, styles.editButton]}
-                            onPress={() => handleEdit(item)}
-                        >
-                            <Text style={styles.actionButtonText}>✏️</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.actionButton, styles.deleteButton]}
-                            onPress={() => handleDelete(item._id)}
-                        >
-                            <Text style={styles.actionButtonText}>🗑️</Text>
-                        </TouchableOpacity>
+                        {canEditQuestions(user) && (
+                            <TouchableOpacity
+                                style={[styles.actionButton, styles.editButton]}
+                                onPress={() => handleEdit(item)}
+                            >
+                                <Text style={styles.actionButtonText}>✏️</Text>
+                            </TouchableOpacity>
+                        )}
+                        {canDeleteQuestions(user) && (
+                            <TouchableOpacity
+                                style={[styles.actionButton, styles.deleteButton]}
+                                onPress={() => handleDelete(item._id)}
+                            >
+                                <Text style={styles.actionButtonText}>🗑️</Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 </View>
 
@@ -307,13 +329,23 @@ export default function QuestionsManagementScreen() {
 
             {/* Header */}
             <View style={styles.header}>
+                <View style={styles.headerLeft}>
+                    <TouchableOpacity
+                        style={styles.backButton}
+                        onPress={() => navigation.goBack()}
+                    >
+                        <Text style={styles.backButtonText}>← Back</Text>
+                    </TouchableOpacity>
+                </View>
                 <Text style={styles.headerTitle}>Questions</Text>
-                <TouchableOpacity
-                    style={styles.addButton}
-                    onPress={() => setIsModalVisible(true)}
-                >
-                    <Text style={styles.addButtonText}>+ Add Question</Text>
-                </TouchableOpacity>
+                {canCreateQuestions(user) && (
+                    <TouchableOpacity
+                        style={styles.addButton}
+                        onPress={() => setIsModalVisible(true)}
+                    >
+                        <Text style={styles.addButtonText}>+ Add Question</Text>
+                    </TouchableOpacity>
+                )}
             </View>
 
             {/* Search Section */}
@@ -461,21 +493,56 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        minHeight: 80,
+    },
+    headerLeft: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    backButton: {
+        backgroundColor: colors.white,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        shadowColor: colors.white,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    backButtonText: {
+        color: colors.babyBlue,
+        fontWeight: '600',
+        fontSize: 10,
+        marginLeft: 4,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         color: colors.white,
+        flex: 2,
+        textAlign: 'center',
     },
     addButton: {
         backgroundColor: colors.orange,
         paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 8,
+        paddingVertical: 10,
+        borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        shadowColor: colors.orange,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
     },
     addButtonText: {
         color: colors.white,
         fontWeight: '600',
+        fontSize: 10,
     },
     searchSection: {
         backgroundColor: colors.white,
@@ -706,5 +773,23 @@ const styles = StyleSheet.create({
     levelChipTextSelected: {
         color: colors.white,
         fontWeight: '600',
+    },
+    accessDeniedContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    accessDeniedTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: colors.red,
+        marginBottom: 16,
+    },
+    accessDeniedMessage: {
+        fontSize: 16,
+        color: colors.grayDark,
+        textAlign: 'center',
+        lineHeight: 24,
     },
 });
