@@ -46,7 +46,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         totalCategories: categoryStats.length,
       });
     } catch (error) {
-      console.error('Error loading stats:', error);
       // Fallback to default values
       setStats({
         totalQuestions: 0,

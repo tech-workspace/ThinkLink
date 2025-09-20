@@ -25,13 +25,13 @@ interface QuestionForm {
     title: string;
     answer: string;
     category: string;
-    level: 'Easy' | 'Medium' | 'Hard';
+    level: 1 | 2 | 3;
 }
 
 const LEVELS = [
-    { value: 'Easy', label: 'Easy' },
-    { value: 'Medium', label: 'Medium' },
-    { value: 'Hard', label: 'Hard' },
+    { value: 1, label: 'Level 1' },
+    { value: 2, label: 'Level 2' },
+    { value: 3, label: 'Level 3' },
 ];
 
 export default function QuestionsManagementScreen() {
@@ -45,7 +45,7 @@ export default function QuestionsManagementScreen() {
         title: '',
         answer: '',
         category: '',
-        level: 'Easy',
+        level: 1,
     });
     const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState<string[]>([]);
@@ -88,7 +88,6 @@ export default function QuestionsManagementScreen() {
                 setFilteredQuestions(response.data.questions);
             }
         } catch (error) {
-            console.error('Error loading questions:', error);
             Alert.alert('Error', 'Failed to load questions. Please try again.');
         } finally {
             setLoading(false);
@@ -130,14 +129,13 @@ export default function QuestionsManagementScreen() {
                 setCategoryDetails([]);
             }
         } catch (error) {
-            console.error('Error loading categories:', error);
             // Fallback to default categories
             setCategories(['JavaScript', 'Python', 'React', 'Database', 'Other']);
             setCategoryDetails([]);
         }
     };
 
-    const handleInputChange = (field: keyof QuestionForm, value: string) => {
+    const handleInputChange = (field: keyof QuestionForm, value: string | number) => {
         setFormData(prev => ({
             ...prev,
             [field]: value,
@@ -157,7 +155,7 @@ export default function QuestionsManagementScreen() {
             Alert.alert('Error', 'Please select a category');
             return false;
         }
-        if (!formData.level.trim()) {
+        if (!formData.level) {
             Alert.alert('Error', 'Please select a difficulty level');
             return false;
         }
@@ -166,6 +164,17 @@ export default function QuestionsManagementScreen() {
 
     const handleSubmit = async () => {
         if (!validateForm()) return;
+
+        // Check if question title already exists (only for new questions)
+        if (!editingQuestion) {
+            const titleExists = questions.some(q =>
+                q.title.toLowerCase().trim() === formData.title.toLowerCase().trim()
+            );
+            if (titleExists) {
+                Alert.alert('Error', 'A question with this title already exists. Please choose a different title.');
+                return;
+            }
+        }
 
         setLoading(true);
         try {
@@ -191,7 +200,6 @@ export default function QuestionsManagementScreen() {
                 }
             }
         } catch (error) {
-            console.error('Error saving question:', error);
             Alert.alert('Error', 'Failed to save question. Please try again.');
         } finally {
             setLoading(false);
@@ -229,7 +237,6 @@ export default function QuestionsManagementScreen() {
                                 Alert.alert('Error', 'Failed to delete question. Please try again.');
                             }
                         } catch (error) {
-                            console.error('Error deleting question:', error);
                             Alert.alert('Error', 'Failed to delete question. Please try again.');
                         } finally {
                             setLoading(false);
@@ -247,12 +254,12 @@ export default function QuestionsManagementScreen() {
             title: '',
             answer: '',
             category: '',
-            level: 'Easy',
+            level: 1,
         });
     };
 
-    const getLevelLabel = (level: string) => {
-        return LEVELS.find(l => l.value === level)?.label || level;
+    const getLevelLabel = (level: number) => {
+        return LEVELS.find(l => l.value === level)?.label || `Level ${level}`;
     };
 
     const getCategoryDetails = (categoryName: string) => {

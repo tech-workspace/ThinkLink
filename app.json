@@ -3,6 +3,7 @@
     "name": "ThinkLink",
     "slug": "ThinkLink",
     "version": "1.0.0",
+    "versionCode": 1,
     "orientation": "portrait",
     "icon": "./assets/ThinkLink.png",
     "userInterfaceStyle": "light",
@@ -16,8 +17,9 @@
       "supportsTablet": true
     },
     "android": {
+      "icon": "./assets/icon.png",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/ThinkLink.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#87CEEB"
       },
       "edgeToEdgeEnabled": true,

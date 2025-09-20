@@ -73,12 +73,6 @@ const UsersManagementScreen: React.FC = () => {
             setHasNextPage(response.pagination.hasNextPage);
             setHasPrevPage(response.pagination.hasPrevPage);
         } catch (error: any) {
-            console.error('❌ Users Management Error:', error);
-            console.error('Error details:', {
-                message: error.message,
-                status: error.response?.status,
-                data: error.response?.data
-            });
             Alert.alert('Error', `Failed to load users: ${error.message}`);
         } finally {
             setLoading(false);

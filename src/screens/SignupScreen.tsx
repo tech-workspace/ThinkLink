@@ -84,7 +84,6 @@ export default function SignupScreen({ onNavigateToLogin }: SignupScreenProps) {
 
             // Success is handled by the auth context - user will be redirected to main app
         } catch (error: any) {
-            console.error('Signup error:', error.message);
             Alert.alert('Signup Failed', error.message || 'Please try again.');
         } finally {
             setLoading(false);

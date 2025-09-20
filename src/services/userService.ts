@@ -62,12 +62,6 @@ export const getUsers = async (params: GetUsersParams = {}): Promise<UsersRespon
             throw new Error('Invalid users response structure');
         }
     } catch (error: any) {
-        console.error('❌ Users Service Error:', error);
-        console.error('Error details:', {
-            message: error.message,
-            status: error.response?.status,
-            data: error.response?.data
-        });
         throw error;
     }
 };

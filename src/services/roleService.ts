@@ -60,12 +60,6 @@ export const getRoleById = async (id: string): Promise<Role> => {
             throw new Error('Invalid role response structure');
         }
     } catch (error) {
-        console.error('❌ Role Service Error:', error);
-        console.error('Error details:', {
-            message: error.message,
-            status: error.response?.status,
-            data: error.response?.data
-        });
         throw error;
     }
 };

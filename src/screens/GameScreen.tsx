@@ -88,10 +88,9 @@ export default function GameScreen() {
                 setCategoryDetails([]);
             }
         } catch (error) {
-            console.error('Error loading categories and levels:', error);
             // Fallback to default values
             setCategories(['All Categories', 'JavaScript', 'Python', 'React', 'Database']);
-            setLevels(['All', 'Easy', 'Medium', 'Hard']);
+            setLevels(['All', '1', '2', '3']);
             setCategoryDetails([]);
         }
     };
@@ -183,13 +182,6 @@ export default function GameScreen() {
                 Alert.alert('No Results', 'No questions found matching your criteria. Try adjusting your search filters.');
             }
         } catch (error: any) {
-            console.error('Search error:', error);
-            console.error('Error details:', {
-                message: error.message,
-                status: error.response?.status,
-                data: error.response?.data,
-                config: error.config
-            });
             Alert.alert('Error', `Failed to search questions: ${error.response?.data?.message || error.message}`);
         } finally {
             setLoading(false);
@@ -239,8 +231,8 @@ export default function GameScreen() {
         setShowAnswerModal(true);
     };
 
-    const getLevelLabel = (level: string) => {
-        return level; // API returns the actual level names
+    const getLevelLabel = (level: number) => {
+        return `Level ${level}`;
     };
 
     const getCategoryDetails = (categoryName: string) => {

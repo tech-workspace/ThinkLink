@@ -57,7 +57,6 @@ class AuthService {
 
             return response.data;
         } catch (error: any) {
-            console.error('Login error:', error.response?.data || error.message);
             throw this.handleError(error);
         }
     }
@@ -74,7 +73,6 @@ class AuthService {
 
             return response.data;
         } catch (error: any) {
-            console.error('Signup error:', error.response?.data || error.message);
             throw this.handleError(error);
         }
     }
@@ -97,7 +95,6 @@ class AuthService {
 
             return response.data;
         } catch (error: any) {
-            console.error('Get profile error:', error.response?.data || error.message);
             throw this.handleError(error);
         }
     }
@@ -123,7 +120,6 @@ class AuthService {
 
             return response.data;
         } catch (error: any) {
-            console.error('Update profile error:', error.response?.data || error.message);
             throw this.handleError(error);
         }
     }
@@ -133,7 +129,7 @@ class AuthService {
         try {
             await AsyncStorage.multiRemove([TOKEN_KEY, USER_KEY]);
         } catch (error) {
-            console.error('Logout error:', error);
+            // Silent error handling for logout
         }
     }
 
@@ -143,7 +139,6 @@ class AuthService {
             const token = await this.getStoredToken();
             return !!token;
         } catch (error) {
-            console.error('Check authentication error:', error);
             return false;
         }
     }
@@ -153,7 +148,6 @@ class AuthService {
         try {
             return await AsyncStorage.getItem(TOKEN_KEY);
         } catch (error) {
-            console.error('Get token error:', error);
             return null;
         }
     }
@@ -164,7 +158,6 @@ class AuthService {
             const userData = await AsyncStorage.getItem(USER_KEY);
             return userData ? JSON.parse(userData) : null;
         } catch (error) {
-            console.error('Get user data error:', error);
             return null;
         }
     }
@@ -186,7 +179,6 @@ class AuthService {
 
             return userWithRole;
         } catch (error) {
-            console.error('Refresh user role error:', error);
             return null;
         }
     }
@@ -216,7 +208,6 @@ class AuthService {
                 [USER_KEY, JSON.stringify(user)],
             ]);
         } catch (error) {
-            console.error('Store auth data error:', error);
             throw error;
         }
     }

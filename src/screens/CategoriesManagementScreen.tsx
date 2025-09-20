@@ -90,7 +90,6 @@ export default function CategoriesManagementScreen() {
                 setCategories(response.data.categories);
             }
         } catch (error) {
-            console.error('Error loading categories:', error);
             Alert.alert('Error', 'Failed to load categories. Please try again.');
         } finally {
             setLoading(false);
@@ -147,7 +146,6 @@ export default function CategoriesManagementScreen() {
                 }
             }
         } catch (error) {
-            console.error('Error saving category:', error);
             Alert.alert('Error', 'Failed to save category. Please try again.');
         } finally {
             setLoading(false);
@@ -185,7 +183,6 @@ export default function CategoriesManagementScreen() {
                                 Alert.alert('Error', 'Failed to delete category. Please try again.');
                             }
                         } catch (error) {
-                            console.error('Error deleting category:', error);
                             Alert.alert('Error', 'Failed to delete category. Please try again.');
                         } finally {
                             setLoading(false);

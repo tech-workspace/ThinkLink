@@ -47,7 +47,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 }
             }
         } catch (error) {
-            console.error('Auth check error:', error);
+            // Silent error handling for auth check
         } finally {
             setIsLoading(false);
         }
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             await authService.logout();
             setUser(null);
         } catch (error) {
-            console.error('Logout error:', error);
+            // Silent error handling for logout
         }
     };
 
@@ -102,7 +102,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 setUser(response.data);
             }
         } catch (error) {
-            console.error('Refresh profile error:', error);
             // If profile fetch fails, try to get stored user data
             try {
                 const userData = await authService.getStoredUser();
@@ -110,7 +109,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                     setUser(userData);
                 }
             } catch (storedUserError) {
-                console.error('Failed to get stored user data:', storedUserError);
+                // Silent error handling for stored user data
             }
         }
     };
@@ -122,7 +121,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 setUser(userWithRole);
             }
         } catch (error) {
-            console.error('Refresh user role error:', error);
+            // Silent error handling for role refresh
         }
     };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -15,6 +15,8 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '../contexts/AuthContext';
 import { colors } from '../theme/colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { VERSION_INFO } from '../config/version';
 
 const { width } = Dimensions.get('window');
 
@@ -23,15 +25,52 @@ interface LoginForm {
     password: string;
 }
 
+const REMEMBER_CREDENTIALS_KEY = 'remembered_credentials';
+
 interface LoginScreenProps { }
 
 export default function LoginScreen({ }: LoginScreenProps) {
     const { login } = useAuth();
     const [formData, setFormData] = useState<LoginForm>({
-        mobile: '',
-        password: '',
+        mobile: '0568863388',
+        password: '123456',
     });
     const [loading, setLoading] = useState(false);
+    const [rememberMe, setRememberMe] = useState(true);
+
+    // Load remembered credentials on component mount
+    useEffect(() => {
+        loadRememberedCredentials();
+    }, []);
+
+    const loadRememberedCredentials = async () => {
+        try {
+            const remembered = await AsyncStorage.getItem(REMEMBER_CREDENTIALS_KEY);
+            if (remembered) {
+                const credentials = JSON.parse(remembered);
+                setFormData(credentials);
+                setRememberMe(true);
+            }
+        } catch (error) {
+            // Silent error handling for loading credentials
+        }
+    };
+
+    const saveCredentials = async (credentials: LoginForm) => {
+        try {
+            await AsyncStorage.setItem(REMEMBER_CREDENTIALS_KEY, JSON.stringify(credentials));
+        } catch (error) {
+            // Silent error handling for saving credentials
+        }
+    };
+
+    const clearCredentials = async () => {
+        try {
+            await AsyncStorage.removeItem(REMEMBER_CREDENTIALS_KEY);
+        } catch (error) {
+            // Silent error handling for clearing credentials
+        }
+    };
 
     const handleInputChange = (field: keyof LoginForm, value: string) => {
         setFormData(prev => ({
@@ -61,13 +100,18 @@ export default function LoginScreen({ }: LoginScreenProps) {
 
         setLoading(true);
         try {
-
             // Use auth context login method
             await login(formData.mobile.trim(), formData.password);
 
+            // Save credentials if remember me is checked
+            if (rememberMe) {
+                await saveCredentials(formData);
+            } else {
+                await clearCredentials();
+            }
+
             // Success is handled by the auth context - user will be redirected to main app
         } catch (error: any) {
-            console.error('Login error:', error.message);
             Alert.alert('Login Failed', error.message || 'Please check your credentials and try again.');
         } finally {
             setLoading(false);
@@ -129,6 +173,17 @@ export default function LoginScreen({ }: LoginScreenProps) {
                         </View>
                     </View>
 
+                    {/* Remember Me Checkbox */}
+                    <TouchableOpacity
+                        style={styles.rememberMeContainer}
+                        onPress={() => setRememberMe(!rememberMe)}
+                    >
+                        <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                            {rememberMe && <Text style={styles.checkmark}>✓</Text>}
+                        </View>
+                        <Text style={styles.rememberMeText}>Remember me</Text>
+                    </TouchableOpacity>
+
                     <TouchableOpacity
                         style={[styles.loginButton, loading && styles.loginButtonDisabled]}
                         onPress={handleLogin}
@@ -143,6 +198,7 @@ export default function LoginScreen({ }: LoginScreenProps) {
                 {/* Footer */}
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>Secure login powered by ThinkLink</Text>
+                    <Text style={styles.versionText}>{VERSION_INFO.displayVersion}</Text>
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -157,91 +213,92 @@ const styles = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
         justifyContent: 'center',
-        padding: 20,
+        padding: 15,
         minHeight: '100%',
     },
     header: {
         alignItems: 'center',
-        marginBottom: 50,
-        paddingTop: 40,
+        marginBottom: 30,
+        paddingTop: 20,
     },
     logoContainer: {
-        marginBottom: 30,
+        marginBottom: 20,
         alignItems: 'center',
     },
     logoImage: {
-        width: 120,
-        height: 120,
+        width: 80,
+        height: 80,
+        borderRadius: 40,
     },
     title: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: 'bold',
         color: colors.white,
-        marginBottom: 8,
+        marginBottom: 6,
         textAlign: 'center',
     },
     subtitle: {
-        fontSize: 16,
+        fontSize: 14,
         color: colors.white,
         textAlign: 'center',
         opacity: 0.9,
     },
     form: {
         backgroundColor: colors.white,
-        borderRadius: 20,
-        padding: 30,
-        marginHorizontal: 10,
+        borderRadius: 16,
+        padding: 20,
+        marginHorizontal: 5,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
-            height: 10,
+            height: 6,
         },
-        shadowOpacity: 0.25,
-        shadowRadius: 20,
-        elevation: 10,
+        shadowOpacity: 0.2,
+        shadowRadius: 12,
+        elevation: 8,
     },
     inputContainer: {
-        marginBottom: 25,
+        marginBottom: 18,
     },
     label: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '600',
         color: colors.grayDark,
-        marginBottom: 10,
+        marginBottom: 8,
     },
     inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: colors.grayLight,
-        borderRadius: 12,
-        borderWidth: 2,
+        borderRadius: 10,
+        borderWidth: 1,
         borderColor: colors.babyBlueLight,
-        paddingHorizontal: 15,
+        paddingHorizontal: 12,
     },
     inputIcon: {
-        fontSize: 18,
-        marginRight: 12,
+        fontSize: 16,
+        marginRight: 10,
     },
     input: {
         flex: 1,
-        paddingVertical: 16,
-        fontSize: 16,
+        paddingVertical: 12,
+        fontSize: 15,
         color: colors.grayDark,
     },
     loginButton: {
         backgroundColor: colors.orange,
-        borderRadius: 12,
-        padding: 18,
+        borderRadius: 10,
+        padding: 14,
         alignItems: 'center',
-        marginTop: 20,
+        marginTop: 15,
         shadowColor: colors.orange,
         shadowOffset: {
             width: 0,
-            height: 4,
+            height: 3,
         },
         shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 6,
+        shadowRadius: 6,
+        elevation: 4,
     },
     loginButtonDisabled: {
         backgroundColor: colors.gray,
@@ -250,17 +307,55 @@ const styles = StyleSheet.create({
     },
     loginButtonText: {
         color: colors.white,
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
+    },
+    rememberMeContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
+        marginTop: 5,
+    },
+    checkbox: {
+        width: 18,
+        height: 18,
+        borderWidth: 2,
+        borderColor: colors.gray,
+        borderRadius: 4,
+        marginRight: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+    },
+    checkboxChecked: {
+        backgroundColor: colors.orange,
+        borderColor: colors.orange,
+    },
+    checkmark: {
+        color: colors.white,
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    rememberMeText: {
+        color: colors.grayDark,
+        fontSize: 14,
+        fontWeight: '500',
     },
     footer: {
         alignItems: 'center',
-        marginTop: 40,
-        paddingBottom: 20,
+        marginTop: 20,
+        paddingBottom: 10,
     },
     footerText: {
         fontSize: 14,
         color: colors.white,
         opacity: 0.8,
+    },
+    versionText: {
+        fontSize: 12,
+        color: colors.white,
+        opacity: 0.6,
+        marginTop: 4,
+        fontWeight: '500',
     },
 });

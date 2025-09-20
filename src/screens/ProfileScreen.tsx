@@ -15,6 +15,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '../contexts/AuthContext';
 import { colors } from '../theme/colors';
 import { getUserRole, getUserPermissions } from '../utils/permissions';
+import { VERSION_INFO } from '../config/version';
 
 export default function ProfileScreen() {
     const { user, logout, updateProfile, refreshUserRole } = useAuth();
@@ -150,6 +151,22 @@ export default function ProfileScreen() {
                         <TouchableOpacity style={styles.actionButton}>
                             <Text style={styles.actionButtonText}>ℹ️ About</Text>
                         </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.card}>
+                        <Text style={styles.cardTitle}>App Information</Text>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>App Version:</Text>
+                            <Text style={styles.infoValue}>{VERSION_INFO.displayVersion}</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Build Number:</Text>
+                            <Text style={styles.infoValue}>{VERSION_INFO.buildNumber}</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Full Version:</Text>
+                            <Text style={styles.infoValue}>{VERSION_INFO.fullVersion}</Text>
+                        </View>
                     </View>
 
                     <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
