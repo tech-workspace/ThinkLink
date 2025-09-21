@@ -1,0 +1,11 @@
+npx react-native run-android
+
+npx expo start
+npx expo start --android
+
+adb devices
+adb install myapp.apk
+adb install -r myapp.apk (reinstall)
+
+#build a new apk file:
+cd android && ./gradlew assembleRelease
