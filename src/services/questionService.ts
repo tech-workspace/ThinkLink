@@ -5,7 +5,7 @@ export interface Question {
     title: string;
     answer: string;
     category: string;
-    level: 1 | 2 | 3;
+    level: string;
     createdAt: string;
     updatedAt: string;
 }

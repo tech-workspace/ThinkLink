@@ -90,7 +90,7 @@ export default function GameScreen() {
         } catch (error) {
             // Fallback to default values
             setCategories(['All Categories', 'JavaScript', 'Python', 'React', 'Database']);
-            setLevels(['All', '1', '2', '3']);
+            setLevels(['All', 'Beginner', 'Intermediate', 'Advanced']);
             setCategoryDetails([]);
         }
     };
@@ -231,8 +231,14 @@ export default function GameScreen() {
         setShowAnswerModal(true);
     };
 
-    const getLevelLabel = (level: number) => {
-        return `Level ${level}`;
+    const getLevelLabel = (level: string) => {
+        const levelMap: { [key: string]: string } = {
+            'Beginner': 'Level 1',
+            'Intermediate': 'Level 2',
+            'Advanced': 'Level 3',
+            'Expert': 'Level 4'
+        };
+        return levelMap[level] || level;
     };
 
     const getCategoryDetails = (categoryName: string) => {
@@ -450,7 +456,6 @@ export default function GameScreen() {
                                             </View>
                                         </View>
                                         <View style={styles.metaItem}>
-                                            <Text style={styles.metaLabel}>Level:</Text>
                                             <Text style={[styles.metaValue, styles.levelBadge]}>
                                                 {getLevelLabel(question.level)}
                                             </Text>
@@ -532,26 +537,26 @@ export default function GameScreen() {
                 animationType="fade"
                 onRequestClose={() => setShowAnswerModal(false)}
             >
-                <TouchableWithoutFeedback onPress={() => setShowAnswerModal(false)}>
-                    <View style={styles.modalOverlay}>
-                        <TouchableWithoutFeedback>
-                            <View style={styles.answerModalContainer}>
-                                <View style={styles.answerModalHeader}>
-                                    <Text style={styles.answerModalTitle}>Answer</Text>
-                                    <TouchableOpacity
-                                        style={styles.closeButton}
-                                        onPress={() => setShowAnswerModal(false)}
-                                    >
-                                        <Text style={styles.closeButtonText}>✕</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <ScrollView style={styles.answerModalContent}>
-                                    <Text style={styles.answerModalText}>{selectedAnswer}</Text>
-                                </ScrollView>
-                            </View>
-                        </TouchableWithoutFeedback>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.answerModalContainer}>
+                        <View style={styles.answerModalHeader}>
+                            <Text style={styles.answerModalTitle}>Answer</Text>
+                            <TouchableOpacity
+                                style={styles.closeButton}
+                                onPress={() => setShowAnswerModal(false)}
+                            >
+                                <Text style={styles.closeButtonText}>✕</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView
+                            style={styles.answerModalContent}
+                            showsVerticalScrollIndicator={true}
+                            bounces={true}
+                        >
+                            <Text style={styles.answerModalText}>{selectedAnswer}</Text>
+                        </ScrollView>
                     </View>
-                </TouchableWithoutFeedback>
+                </View>
             </Modal>
         </SafeAreaView>
     );
@@ -1122,8 +1127,8 @@ const styles = StyleSheet.create({
     answerModalContainer: {
         backgroundColor: colors.white,
         borderRadius: 12,
-        width: '100%',
-        maxHeight: '80%',
+        width: '90%',
+        height: '70%',
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
@@ -1160,11 +1165,13 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     answerModalContent: {
+        flex: 1,
         padding: 20,
     },
     answerModalText: {
         fontSize: 16,
         lineHeight: 24,
         color: colors.grayDark,
+        paddingBottom: 20,
     },
 });

@@ -5,6 +5,7 @@ import {
     StyleSheet,
     ScrollView,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     SafeAreaView,
     TextInput,
     Alert,
@@ -25,13 +26,13 @@ interface QuestionForm {
     title: string;
     answer: string;
     category: string;
-    level: 1 | 2 | 3;
+    level: string;
 }
 
 const LEVELS = [
-    { value: 1, label: 'Level 1' },
-    { value: 2, label: 'Level 2' },
-    { value: 3, label: 'Level 3' },
+    { value: 'Beginner', label: 'Level 1' },
+    { value: 'Intermediate', label: 'Level 2' },
+    { value: 'Advanced', label: 'Level 3' },
 ];
 
 export default function QuestionsManagementScreen() {
@@ -41,11 +42,13 @@ export default function QuestionsManagementScreen() {
     const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+    const [showAnswerModal, setShowAnswerModal] = useState(false);
+    const [selectedAnswer, setSelectedAnswer] = useState('');
     const [formData, setFormData] = useState<QuestionForm>({
         title: '',
         answer: '',
         category: '',
-        level: 1,
+        level: 'Beginner',
     });
     const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState<string[]>([]);
@@ -135,7 +138,7 @@ export default function QuestionsManagementScreen() {
         }
     };
 
-    const handleInputChange = (field: keyof QuestionForm, value: string | number) => {
+    const handleInputChange = (field: keyof QuestionForm, value: string) => {
         setFormData(prev => ({
             ...prev,
             [field]: value,
@@ -155,7 +158,7 @@ export default function QuestionsManagementScreen() {
             Alert.alert('Error', 'Please select a category');
             return false;
         }
-        if (!formData.level) {
+        if (!formData.level.trim()) {
             Alert.alert('Error', 'Please select a difficulty level');
             return false;
         }
@@ -186,7 +189,8 @@ export default function QuestionsManagementScreen() {
                     Alert.alert('Success', 'Question updated successfully!');
                     handleCloseModal();
                 } else {
-                    Alert.alert('Error', 'Failed to update question. Please try again.');
+                    const errorMessage = response.message || 'Failed to update question. Please try again.';
+                    Alert.alert('Error', errorMessage);
                 }
             } else {
                 // Add new question
@@ -196,11 +200,13 @@ export default function QuestionsManagementScreen() {
                     Alert.alert('Success', 'Question added successfully!');
                     handleCloseModal();
                 } else {
-                    Alert.alert('Error', 'Failed to create question. Please try again.');
+                    const errorMessage = response.message || 'Failed to create question. Please try again.';
+                    Alert.alert('Error', errorMessage);
                 }
             }
-        } catch (error) {
-            Alert.alert('Error', 'Failed to save question. Please try again.');
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to save question. Please try again.';
+            Alert.alert('Error', errorMessage);
         } finally {
             setLoading(false);
         }
@@ -254,17 +260,23 @@ export default function QuestionsManagementScreen() {
             title: '',
             answer: '',
             category: '',
-            level: 1,
+            level: 'Beginner',
         });
     };
 
-    const getLevelLabel = (level: number) => {
-        return LEVELS.find(l => l.value === level)?.label || `Level ${level}`;
+    const getLevelLabel = (level: string) => {
+        return LEVELS.find(l => l.value === level)?.label || level;
     };
 
     const getCategoryDetails = (categoryName: string) => {
         return categoryDetails.find(cat => cat.name === categoryName) || null;
     };
+
+    const handleRevealAnswer = (answer: string) => {
+        setSelectedAnswer(answer);
+        setShowAnswerModal(true);
+    };
+
 
     const renderQuestion = ({ item }: { item: Question }) => {
         const categoryInfo = getCategoryDetails(item.category);
@@ -272,7 +284,7 @@ export default function QuestionsManagementScreen() {
         return (
             <View style={styles.questionCard}>
                 <View style={styles.questionHeader}>
-                    <Text style={styles.questionTitle} numberOfLines={2}>
+                    <Text style={styles.questionTitle}>
                         {item.title}
                     </Text>
                     <View style={styles.questionActions}>
@@ -312,16 +324,18 @@ export default function QuestionsManagementScreen() {
                         </View>
                     </View>
                     <View style={styles.metaItem}>
-                        <Text style={styles.metaLabel}>Level:</Text>
                         <Text style={[styles.metaValue, styles.levelBadge]}>
                             {getLevelLabel(item.level)}
                         </Text>
                     </View>
                 </View>
 
-                <Text style={styles.questionAnswer} numberOfLines={3}>
-                    {item.answer}
-                </Text>
+                <TouchableOpacity
+                    style={styles.revealButton}
+                    onPress={() => handleRevealAnswer(item.answer)}
+                >
+                    <Text style={styles.revealButtonText}>🔍 Reveal Answer</Text>
+                </TouchableOpacity>
 
                 <Text style={styles.questionDate}>
                     Updated: {new Date(item.updatedAt).toLocaleDateString()}
@@ -482,6 +496,35 @@ export default function QuestionsManagementScreen() {
                         </View>
                     </ScrollView>
                 </SafeAreaView>
+            </Modal>
+
+            {/* Answer Modal */}
+            <Modal
+                visible={showAnswerModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowAnswerModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.answerModalContainer}>
+                        <View style={styles.answerModalHeader}>
+                            <Text style={styles.answerModalTitle}>Answer</Text>
+                            <TouchableOpacity
+                                style={styles.closeButton}
+                                onPress={() => setShowAnswerModal(false)}
+                            >
+                                <Text style={styles.closeButtonText}>✕</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView
+                            style={styles.answerModalContent}
+                            showsVerticalScrollIndicator={true}
+                            bounces={true}
+                        >
+                            <Text style={styles.answerModalText}>{selectedAnswer}</Text>
+                        </ScrollView>
+                    </View>
+                </View>
             </Modal>
         </SafeAreaView>
     );
@@ -665,12 +708,6 @@ const styles = StyleSheet.create({
         paddingVertical: 2,
         borderRadius: 4,
     },
-    questionAnswer: {
-        fontSize: 14,
-        color: colors.gray,
-        lineHeight: 20,
-        marginBottom: 8,
-    },
     questionDate: {
         fontSize: 12,
         color: colors.gray,
@@ -798,5 +835,72 @@ const styles = StyleSheet.create({
         color: colors.grayDark,
         textAlign: 'center',
         lineHeight: 24,
+    },
+    // Reveal Answer Button
+    revealButton: {
+        backgroundColor: colors.green,
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+        marginVertical: 8,
+        alignItems: 'center',
+    },
+    revealButtonText: {
+        color: colors.white,
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    // Answer Modal
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    answerModalContainer: {
+        backgroundColor: colors.white,
+        borderRadius: 12,
+        width: '90%',
+        height: '70%',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    answerModalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
+    },
+    answerModalTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: colors.grayDark,
+    },
+    closeButton: {
+        padding: 4,
+    },
+    closeButtonText: {
+        fontSize: 18,
+        color: colors.gray,
+        fontWeight: '600',
+    },
+    answerModalContent: {
+        flex: 1,
+        padding: 20,
+    },
+    answerModalText: {
+        fontSize: 16,
+        color: colors.grayDark,
+        lineHeight: 24,
+        paddingBottom: 20,
     },
 });
